@@ -2,9 +2,9 @@
 
 Una semplice e moderna applicazione To-Do List con backend Flask e interfaccia web responsive.
 
-![Screenshot 1](screenshots/screen.png)
-![Screenshot 2](screenshots/screen1.png)
-![Screenshot 3](screenshots/screen2.png)
+![Screenshot 1](screenshots/Screen.png)
+![Screenshot 2](screenshots/Screen1.png)
+![Screenshot 3](screenshots/Screen2.png)
 
 ## Caratteristiche
 
