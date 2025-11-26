@@ -1,6 +1,10 @@
 # To-Do List Application
 
-Una semplice applicazione To-Do List con backend Flask e interfaccia web moderna.
+Una semplice e moderna applicazione To-Do List con backend Flask e interfaccia web responsive.
+
+![Screenshot 1](screenshots/screen.png)
+![Screenshot 2](screenshots/screen1.png)
+![Screenshot 3](screenshots/screen2.png)
 
 ## Caratteristiche
 
@@ -20,21 +24,22 @@ pip install -r requirements.txt
 
 ## Avvio dell'applicazione
 
-1. Avvia il server Flask:
+1. Attiva l'ambiente virtuale:
 ```bash
-python run.py
+.\.venv\Scripts\Activate.ps1
 ```
 
-oppure
-
+2. Avvia il server Flask:
 ```bash
 python app.py
 ```
 
-2. Apri il browser e vai su:
+3. Apri il browser e vai su:
 ```
 http://localhost:5000
 ```
+
+> **Nota:** Assicurati di aver installato le dipendenze con `pip install -r requirements.txt` prima di avviare l'applicazione.
 
 ## Utilizzo
 
