@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 To-Do List</h1>
+        
+        <div class="input-container">
+            <input type="text" id="taskInput" placeholder="Inserisci una nuova task..." />
+            <button onclick="addTask()">Aggiungi</button>
+        </div>
+
+        <ul id="taskList" class="task-list"></ul>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            Nessuna task presente. Aggiungine una! 🎯
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/tasks';
+
+        // Carica le task all'avvio
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
+        // Permetti di aggiungere task premendo Enter
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        async function loadTasks() {
+            try {
+                const response = await fetch(API_URL);
+                const tasks = await response.json();
+                renderTasks(tasks);
+            } catch (error) {
+                console.error('Errore nel caricamento delle task:', error);
+            }
+        }
+
+        function renderTasks(tasks) {
+            const taskList = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyState');
+            
+            taskList.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                li.dataset.id = task.id;
+                
+                li.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id}, this.checked)">
+                    <span class="task-text">${escapeHtml(task.text)}</span>
+                    <div class="task-actions">
+                        <button class="btn-edit" onclick="editTask(${task.id}, '${escapeHtml(task.text)}')">Modifica</button>
+                        <button class="btn-delete" onclick="deleteTask(${task.id})">Elimina</button>
+                    </div>
+                `;
+                
+                taskList.appendChild(li);
+            });
+        }
+
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('Inserisci il testo della task!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Errore nell\'aggiunta della task:', error);
+                alert('Errore nell\'aggiunta della task');
+            }
+        }
+
+        async function toggleTask(id, completed) {
+            try {
+                await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ completed: completed })
+                });
+                
+                loadTasks();
+            } catch (error) {
+                console.error('Errore nell\'aggiornamento della task:', error);
+            }
+        }
+
+        function editTask(id, currentText) {
+            const taskItem = document.querySelector(`[data-id="${id}"]`);
+            const textSpan = taskItem.querySelector('.task-text');
+            const actionsDiv = taskItem.querySelector('.task-actions');
+            
+            const editContainer = document.createElement('div');
+            editContainer.className = 'edit-container';
+            editContainer.innerHTML = `
+                <input type="text" class="edit-input" value="${currentText}" id="edit-input-${id}">
+                <button class="btn-save" onclick="saveTask(${id})">Salva</button>
+                <button class="btn-cancel" onclick="loadTasks()">Annulla</button>
+            `;
+            
+            textSpan.style.display = 'none';
+            actionsDiv.style.display = 'none';
+            taskItem.appendChild(editContainer);
+            
+            document.getElementById(`edit-input-${id}`).focus();
+        }
+
+        async function saveTask(id) {
+            const input = document.getElementById(`edit-input-${id}`);
+            const newText = input.value.trim();
+            
+            if (!newText) {
+                alert('Il testo della task non può essere vuoto!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: newText })
+                });
+                
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Errore nell\'aggiornamento della task:', error);
+                alert('Errore nell\'aggiornamento della task');
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('Sei sicuro di voler eliminare questa task?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadTasks();
+                }
+            } catch (error) {
+                console.error('Errore nell\'eliminazione della task:', error);
+                alert('Errore nell\'eliminazione della task');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
